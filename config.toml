@@ -2,4 +2,4 @@ baseURL = "https://pdot715.netlify.com/"
 languageCode = "en-us"
 title = "Dev Page 715"
 theme = "capsule"
-
+pygmentsCodeFences = "true"
