@@ -5,7 +5,7 @@ categories: [hugo]
 tags: [static site generator]
 ---
 
-```
+```cpp
 #include <iostream>
 #include <random>
 
