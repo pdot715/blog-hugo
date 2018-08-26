@@ -13,15 +13,15 @@ github에 있는 코드의 주석을 번역함.
 - 장점은 추가, 삭제 연산이 상수시간.
 - 단점은 특정 인덱스 접근이 상수시간으로 안됨 (배열과 달리)
 
-1. 정렬되지 않은 linked list에서 중복되는 원소 제거
+1번 정렬되지 않은 linked list에서 중복되는 원소 제거
 
 - 접근방법 1 : iterating (공간복잡도 O(1), 시간복잡도 O(n^2))
 - 접근방법 2 : hase table 사용 (공간복잡도 O(n), 시간복잡도 O(n))
 
 ```cpp
-  #include <iostream>
-            #include <unordered_map>
-            #include <random>
+#include <iostream>
+#include <unordered_map>
+#include <random>
 
             using namespace std;
 
@@ -135,7 +135,7 @@ github에 있는 코드의 주석을 번역함.
             }
 ```
 
-2. 뒤에서 k번째 원소 구하기
+2번 뒤에서 k번째 원소 구하기
 
 단일 링크드리스트에서 뒤에서 k번째 원소를 구하는 문제 리스트의 길이가 주어지지 않는다고 가정 (길이를 알면 그냥 length-k번째 원소이니까)
 
@@ -298,7 +298,7 @@ int main() {
 }
 ```
 
-3. 중간 노드 삭제
+3번 중간 노드 삭제
 - 접근 방법 :  A 노드를 리스트에서 제거하기 위해서는 A의 이전 노드를 A의 다음 노드와 연결시켜야한다. 하지만 우리는 A의 이전 노드에 접근할 방법이 없다. 해법은 다음 노드의 데이터를 현재 노드에 복사한 다음, 다음 노드를 지우는 것이다
 
 ```cpp
@@ -352,7 +352,7 @@ int main() {
 
 - 이 방법은 삭제할 노드가 리스트의 마지막 노드면 풀 수 없다.
 
-4. 분할
+4번 분할
 
 - 접근 방법 : 첫 노드부터 시작, x보다 큰 건 tail 부분에 x보다 작은건 head부분에 추가. 
 - 입력으로 주어진 연결리스트를 순회하면서 tail list나 head list에 원소를 추가함.
@@ -443,7 +443,636 @@ int main() {
 }
 ```
 
-5. 리스트의 합
-6. 회문 검사
-7. 교집합 (노드의 주소가 완전히 같은 경우)
-8. 루프 발견
+5번 리스트의 합
+
+접근방법
+- recursive
+- iteraitve
+
+```cpp
+
+
+
+#include <iostream>
+
+using namespace std;
+
+struct Node {
+	int data;
+	Node* next;
+	Node(int d) : data{ d }, next{ nullptr } {}
+};
+
+void insert(Node* &head, int data) {
+	Node* newNode = new Node(data);
+	newNode->next = head;
+	head = newNode;
+}
+
+void printList(Node* head) {
+	while (head) {
+		cout << head->data << "-->";
+		head = head->next;
+	}
+	cout << "nullptr" << endl;
+}
+
+Node* add_iterative(Node* list1, Node* list2) {
+	if (list1 == nullptr) {
+		return list2;
+	}
+
+	if (list2 == nullptr) {
+		return list1;
+	}
+
+	// list3은 결과값을 저장하기 위해서
+	Node* list3 = nullptr;
+	// list3의 꼬리 부문에 새로운 Node 추가 위해서
+	Node* list3Tail = nullptr;
+
+	int value = 0, carry = 0;
+
+	while (list1 || list2) {
+
+		// value를 더한다. 만약 이미 탐색한 것이라면 0을 더한다.
+		value = carry + (list1 ? list1->data : 0) + (list2 ? list2->data : 0);
+
+		// 새로운 value와 carry를 구한다.
+		if (value > 9) {
+			carry = 1;
+			value = value % 10;
+		} else {
+			carry = 0;
+		}
+
+		// 새로운 node
+		Node* temp = new Node(value);
+
+		// 만약 첫 노드면 
+		if (list3 == nullptr) {
+			list3 = temp;
+		}
+		else {
+			list3Tail->next = temp;
+		}
+
+		// 새로운 tail 만들기
+		list3Tail = temp;
+
+		if (list1) {
+			list1 = list1->next;
+		}
+		if (list2) {
+			list2 = list2->next;
+		}
+
+		if (carry > 0) {
+			list3Tail->next = new Node(carry);
+		}
+		return list3;
+	}
+}
+
+
+Node* add_recursive(Node* list1, Node* list2, int carry) {
+	if (list1 == nullptr && list2 == nullptr && carry == 0) {
+		return nullptr;
+	}
+
+	int value = carry;
+	if (list1) {
+		value += list1->data;
+	}
+	if (list2) {
+		value += list2->data;
+	}
+
+	Node* resultNode = new Node(value % 10);
+	resultNode->next = add_recursive(list1 ? (list1->next) : nullptr,
+									 list2 ? (list2->next) : nullptr,
+									 value > 9 ? 1 : 0);
+	return resultNode;
+}
+
+
+void padList(Node* &list, int padding) {
+	for (int i = 0; i < padding; ++i) {
+		insert(list, 0);
+	}
+}
+
+int length(Node* head) {
+	int len = 0;
+	while (head) {
+		len++;
+		head = head->next;
+	}
+	return len;
+}
+
+Node* add_followup_helper(Node* list1, Node* list2, int &carry) {
+	if (list1 == nullptr && list2 == nullptr && carry == 0) {
+		return nullptr;
+	}
+
+	Node* result = add_followup_helper(list1 ? (list1->next) : nullptr,
+		list2 ? (list2->next) : nullptr, carry);
+	int value = carry + (list1 ? list1->data : 0) + (list2 ? list2->data : 0);
+	insert(result, value % 10);
+	carry = (value > 9) ? 1 : 0;
+	return result;
+}
+
+Node* add_followup(Node* list1, Node* list2) {
+	int len1 = length(list1);
+	int len2 = length(list2);
+
+	// pad the smaller list
+	if (len1 > len2) {
+		padList(list2, len1 - len2);
+	}
+	else {
+		padList(list1, len2 - len1);
+	}
+	int carry = 0;
+	Node* list3 = add_followup_helper(list1, list2, carry);
+	if (carry)  {
+		insert(list3, carry);
+	}
+	return list3;
+}
+
+
+void deleteList(Node* &head) {
+	Node* nextNode;
+	while (head) {
+		nextNode = head->next;
+		delete(head);
+		head = nextNode;
+	}
+}
+
+
+int main() {
+	// list1은 617로
+	Node* list1 = nullptr;
+	insert(list1, 6);
+	insert(list1, 1);
+	insert(list1, 7);
+	cout << "List 1 : ";
+	printList(list1);
+
+	// list2은 295로
+	Node* list2 = nullptr;
+	insert(list2, 2);
+	insert(list2, 9);
+	insert(list2, 5);
+	cout << "List 2 : ";
+	printList(list2);
+
+	Node* list3 = add_iterative(list1, list2);
+	cout << "Iterative soulution: \n";
+	cout << "List 3 : ";
+	printList(list3);
+
+	Node* list4 = add_recursive(list1, list2, 0);
+	cout << "recursive solution : \n";
+	cout << "List 4 : ";
+	printList(list4);
+
+	deleteList(list1);
+	deleteList(list2);
+	deleteList(list3);
+	deleteList(list4);
+
+
+	cout << "\n\nNow follow up casae, list are stroed such that 1's digit is at the tail of list\n";
+	// Node* listx = nullptr;
+	insert(list1, 4);
+	insert(list1, 3);
+	insert(list1, 2);
+	insert(list1, 9);
+	cout << "List1 : ";
+	printList(list1);
+
+	insert(list2, 9);
+	insert(list2, 9);
+	insert(list2, 8);
+	cout << "List2 : ";
+	printList(list2);
+
+	list3 = add_followup(list1, list2);
+	cout << "adding two above lists\n";
+	cout << "List 3: ";
+	printList(list3);
+
+	deleteList(list1);
+	deleteList(list2);
+	deleteList(list3);
+
+	return 0;
+}
+
+```
+
+이거는 나중에 다시 해보기,,, 
+
+
+
+6번 회문 검사
+
+- 접근방법 1 : 리스트의 절반을 뒤집고 나머지 절반과 비교
+- 접근방법 2 : Iterative
+    - 리스트의 절반을 스택에 push
+    - 스탯에서 pop 하면서 비교한다
+- 접근방법 3 : Recursive
+```cpp
+#include <iostream>
+#include <stack>
+
+using namespace std;
+
+struct Node {
+	char data;
+	Node* next;
+	Node(char c) : data{ c }, next{ nullptr } {}
+};
+
+void insert(Node* &head, char c) {
+	Node* newNode = new Node(c);
+	newNode->next = head;
+	head = newNode;
+}
+
+void printList(Node* head) {
+	while (head) {
+		cout << head->data << "-->";
+		head = head->next;
+	}
+	cout << "nullptr" << endl;
+}
+
+void reverse(Node* &head) {
+	if (head == nullptr || (head && (head->next == nullptr))) {
+		return;
+	}
+	Node* newHead = nullptr;
+	Node* nextNode = nullptr;
+	while (head) {
+		nextNode = head->next;
+		head->next = newHead;
+		newHead = head;
+		head = nextNode;
+	}
+	head = newHead;
+}
+
+bool isPalindromeIter1(Node* head) {
+
+	// 리스트가 비어있거나 하나의 노드만 있는 경우
+	if (head == nullptr || head->next == nullptr) {
+		return true;
+	}
+
+	Node* ptr1 = head;
+	Node* ptr2 = head;
+	Node* middleNode = nullptr;
+
+	while (ptr2 && ptr1 && ptr1->next) {
+		ptr1 = ptr1->next->next;
+		ptr2 = ptr2->next;
+	}
+
+	// node 개수가 홀수가면 중간에 있는거 하나 건너뜀
+	if (ptr1 && ptr1->next == nullptr) {
+		ptr2 = ptr2->next;
+	}
+
+	// 리스트의 뒷 절반 뒤집기
+	reverse(ptr2);
+
+	middleNode = ptr2;
+	// 이제 리스트 절반으로 나눈거 두 개 비교
+	ptr1 = head;
+
+	while (ptr1 && ptr2 && ptr1->data == ptr2->data) {
+		ptr1 = ptr1->next;
+		ptr2 = ptr2->next;
+	}
+
+	reverse(middleNode);
+
+	if (ptr2 == nullptr) {
+		return true;
+	}
+	else {
+		return false;
+	}
+}
+
+
+bool isPalindromeIter2(Node* head) {
+	// 리스트가 비어있거나 하나만 있거나 한 경우
+	if (head == nullptr || head->next == nullptr) {
+		return true;
+	}
+
+	Node* ptr1 = head;
+	Node* ptr2 = head;
+
+	// 리스트 앞 절반부분에 스택 푸쉬
+	stack<Node*> nodeStack;
+
+	while (ptr2 && ptr2 && ptr1->next) {
+		ptr1 = ptr1->next->next;
+		nodeStack.push(ptr2);
+		ptr2 = ptr2->next;
+	}
+
+	// node 개수가 홀수면 중간 하나 생략
+	if (ptr1 && ptr1->next == nullptr) {
+		ptr2 = ptr2->next;
+	}
+
+	// 이제 스택에 넣었던것과 나머지 절반과 비교
+	while (!nodeStack.empty() && ptr2) {
+		Node* curr = nodeStack.top();
+		nodeStack.pop();
+		if (curr->data != ptr2->data) {
+			return false;
+		}
+		ptr2 = ptr2->next;
+	}
+
+	return true;
+}
+
+bool isPalindromeRecurHelper(Node* &left, Node* right) {
+
+	// right가 nullptr이 되면 그만그만
+	if (right == nullptr) {
+		return true;
+	}
+
+	// 리스트의 나머지가 회문이 되게
+	bool isPalindrome = isPalindromeRecurHelper(left, right->next);
+	if (!isPalindrome) {
+		return false;
+	}
+
+	// 현재 node의 value를 체크
+	isPalindrome = (left->data == right->data);
+
+	// 다음 call을 위해서 left를 left->next로
+	left = left->next;
+
+	return isPalindrome;
+}
+
+bool isPalindromeRecur(Node* head) {
+	return isPalindromeRecurHelper(head, head);
+}
+
+int main() {
+	Node* head1 = nullptr;
+	insert(head1, 'a');
+	insert(head1, 'b');
+	insert(head1, 'c');
+	insert(head1, 'c');
+	insert(head1, 'b');
+	insert(head1, 'a');
+	cout << "List 1 : ";
+	printList(head1);
+	if (isPalindromeIter1(head1)) {
+		cout << "List 1 is pallindrome list\n";
+	}
+	else {
+		cout << "List 1 is not a pallindrome list\n";
+	}
+	cout << "list 1 : ";
+	printList(head1);
+
+	Node* head2 = nullptr;
+	insert(head2, 'r');
+	insert(head2, 'a');
+	insert(head2, 'd');
+	insert(head2, 'a');
+	insert(head2, 'r');
+	cout << "List 2 : ";
+	printList(head2);
+
+	if (isPalindromeIter2(head2)) {
+		cout << "List 2 is pallindrome list\n";
+	}
+	else {
+		cout << "List 2 is not a pallindrome list \n";
+	}
+
+	cout << "List 2 : ";
+	printList(head2);
+
+	Node* head = nullptr;
+	insert(head, 'a');
+	insert(head, 'b');
+	insert(head, 'c');
+	insert(head, 'b');
+	insert(head, 'd');
+
+
+	if (isPalindromeRecur(head)) {
+		cout << "List 3 is pallindrome list \n";
+	}
+	else {
+		cout << "list 3 is not a pallindrome list \n";
+	}
+
+	cout << "list 3 : ";
+	printList(head);
+	return 0;
+
+}
+
+
+```
+
+7번 교집합 (노드의 주소가 완전히 같은 경우)
+
+```cpp
+/*
+2개의 링크드리스트가 주어지고 같은 지점을 교차할때
+그 교차포인트를 리턴함 (없으면 nullptr)
+교차 판단은 reference (value 아님)
+*/ 
+
+#include <iostream>
+#include <cmath>
+
+using namespace std;
+
+struct Node {
+	int data;
+	Node* next;
+	Node(int d) : data {d}, next{nullptr} {}
+};
+
+void printList(Node* head) {
+	while(head) {
+		cout << head->data << "-->";
+		head= head->next;
+	}
+	cout << "NULL" << endl;
+}
+
+int listLen(Node* head) {
+	int count = 0;
+	while(head) {
+		head = head->next;
+		count++;
+	}
+	return count;
+}
+
+Node* intersectionPoint(Node* head1, Node* head2) {
+	int len1 = listLen(head1);
+	int len2 = listLen(head2);
+
+	Node* ptr1 = (len1 > len2) ? head1 : head2;
+	Node* ptr2 = (len1 > len2) ? head2 : head1;
+
+	int i = 0;
+	while (i < abs(len1-len2) && ptr1) {
+		ptr1 = ptr1->next;
+	}
+
+	while(ptr1 && ptr2) {
+		if(ptr1 == ptr2) {
+			return ptr1;
+		}
+		ptr1=ptr1->next;
+		ptr2=ptr2->next;
+	}
+
+	return nullptr;
+}
+
+
+int main() {
+	Node* list1 = new Node(3);
+	list1->next = new Node(6);
+	list1->next->next = new Node(9);
+	list1->next->next->next  = new Node(12);
+	list1->next->next->next->next = new Node(15);
+	list1->next->next->next->next->next  = new Node(18);
+
+	Node* list2= new Node(7);
+	list2->next = new Node(10);
+	list2->next->next = list1->next->next->next;
+
+	printList(list1);
+	printList(list2);
+
+	Node* intersectingNode = intersectionPoint(list1, list2);
+	if(intersectingNode) {
+		cout << " intersecting Node of lists is : " << intersectingNode->data << endl;
+	} else {
+		cout << "Lists do not interset" << endl;
+	}
+	return 0;
+}
+
+```
+8번 루프 발견
+- 조건 : 순환 연결리스트가 주어짐 (node의 next 포인터가 앞선 노드들 가운데 어느 하나를 가리키도록 되어있는 연결리스트)
+- 구해야하는 것 : 순환되는 부분의 첫째 노드
+- 해결 방법
+	- 1단계 : 연결리스트에 루프가 있는지 검사
+		- FastRunner (한 번에 두 걸음), SlowRunner (한 번에 한 걸음) 접근법 사용
+
+
+```cpp
+#include <iostream>
+
+
+using namespace std;
+
+struct Node {
+	int data;
+	Node* next;
+	Node(int d) : data{ d }, next{ nullptr } {}
+};
+
+void removeLoop(Node* loopNode, Node* head) {
+	Node* ptr1 = head;
+	Node* ptr2 = loopNode;
+	while (ptr1->next != ptr2->next) {
+		ptr1 = ptr1->next;
+		ptr2 = ptr2->next;
+	}
+
+	ptr2->next = nullptr;
+}
+
+bool detectAndRemoveCycle(Node* head) {
+	if (head == nullptr) {
+		return false;
+	}
+
+	Node* fastPtr = head;
+	Node* slowPtr = head;
+
+	while (slowPtr && fastPtr && fastPtr->next) {
+		fastPtr = fastPtr->next->next;
+		slowPtr = slowPtr->next;
+		if (fastPtr == slowPtr) {
+			removeLoop(slowPtr, head);
+			return true;
+		}
+		
+	}
+	return false;
+}
+
+
+void insert(Node* &head, int data) {
+	Node* newNode = new Node(data);
+	if (head == nullptr) {
+		head = newNode;
+	}
+	else {
+		Node* temp = head;
+		while (temp->next != nullptr) {
+			temp = temp->next;
+		}
+		temp->next = newNode;
+	}
+}
+
+
+void printList(Node* head) {
+	while (head) {
+		cout << head->data << "-->";
+		head = head->next;
+	}
+	cout << "NULL" << endl;
+}
+
+int main() {
+	Node* head = nullptr;
+	insert(head, 1);
+	insert(head, 2);
+	insert(head, 3);
+	insert(head, 4);
+	insert(head, 5);
+	std::cout << "Current List:\n";
+	printList(head);
+	cout << "Inserting loop, connecting 5 to 2\n";
+	head->next->next->next->next->next = head->next;
+	std::cout << "Detecting and deleting loop\n";
+	detectAndRemoveCycle(head);
+	std::cout << "Back to the same old list\n";
+	printList(head);
+	return 0;
+}
+
+```
